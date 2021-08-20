@@ -3,12 +3,26 @@ const ProjectManager = require("../models/ProjectManager.model");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 
+//get All ProjectManager List
+const getAllProjectManagerList = async (req, res) => {
+  try {
+    //get user details
+    //-password : dont return the pasword
+    const projectManagers = await ProjectManager.find().select("-password");
+    res.json(projectManagers);
+  } catch {
+    console.log(err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+
 //get ProjectManager details
 const getProjectManagerDetails = async (req, res) => {
   try {
     //get user details
     //-password : dont return the pasword
-    const user = await ProjectManager.findById(req.user.id).select("-password");
+    const user = await ProjectManager.findById(req.user.id).select("-password").populate("projectManager", "_id name");
     res.json(user);
   } catch {
     console.log(err.message);
@@ -152,9 +166,24 @@ const updateProjectManagerProfile = async (req, res) => {
   }
 };
 
+//Delete Project Manager
+const deleteProjectManager = async (req, res) => {
+  try {
+    ProjectManager.findByIdAndDelete(req.params.id)
+      .then(() => {
+        res.json("Project Manager Deleted");
+      })
+      .catch((err) => res.status(400).json("Error: " + err));
+  } catch (err) {
+    res.status(500).send("Server Error");
+  }
+};
+
 module.exports = {
   getProjectManagerDetails,
   loginProjectManager,
   registerProjectManager,
   updateProjectManagerProfile,
+  getAllProjectManagerList,
+  deleteProjectManager
 };
