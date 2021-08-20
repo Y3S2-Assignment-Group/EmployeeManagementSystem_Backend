@@ -21,6 +21,9 @@ const ProjectManagerSchema = new Schema({
     salary: {
         type: Number,
     },
+    rate: {
+        type: Number,
+    },
     commentList: [{
         type:Schema.Types.ObjectId,
         ref:"Comment"

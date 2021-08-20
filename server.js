@@ -15,9 +15,17 @@ app.use(express.json({ extended: false }));
 
 app.get("/", (req, res) => res.send("Employee Management System Backend Api Running"));
 
+
 //Define Routes
 //-------------------Admin---------------------
 app.use("/api/admin", require("./routes/Admin.route"));
+
+//-------------------Employee---------------------
+app.use("/api/employee", require("./routes/Employee.route"));
+
+//-------------------Employee---------------------
+app.use("/api/projectmanager", require("./routes/ProjectManager.route"));
+
 
 const PORT = process.env.PORT || 5000;
 
