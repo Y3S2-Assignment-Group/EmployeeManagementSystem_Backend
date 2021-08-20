@@ -35,6 +35,9 @@ app.use("/api/sprint", require("./routes/Sprint.route"));
 //-------------------Issue---------------------
 app.use("/api/issue", require("./routes/Issue.route"));
 
+//-------------------Issue---------------------
+app.use("/api/forgotpassword", require("./routes/ForgotPassword.route"));
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

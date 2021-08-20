@@ -22,7 +22,7 @@ const getProjectManagerDetails = async (req, res) => {
   try {
     //get user details
     //-password : dont return the pasword
-    const user = await ProjectManager.findById(req.user.id).select("-password").populate("projectManager", "_id name");
+    const user = await ProjectManager.findById(req.user.id).select("-password").populate("projectsList", "_id projectName descripton");
     res.json(user);
   } catch {
     console.log(err.message);

@@ -3,6 +3,20 @@ const Employee = require("../models/Employee.model");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 
+
+//get Employee details
+const getAllEmployeesList = async (req, res) => {
+  try {
+    //get user details
+    //-password : dont return the pasword
+    const empList = await Employee.find().select("-password");
+    res.json(empList);
+  } catch(err) {
+    console.log(err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
 //get Employee details
 const getEmployeeDetails = async (req, res) => {
   try {
@@ -158,4 +172,4 @@ const deleteEmployee = async (req, res) => {
   }
 };
 
-module.exports = { getEmployeeDetails, loginEmployee , registerEmployee,updateEmployeeProfile, deleteEmployee};
+module.exports = { getEmployeeDetails, loginEmployee , registerEmployee,updateEmployeeProfile, deleteEmployee,getAllEmployeesList};

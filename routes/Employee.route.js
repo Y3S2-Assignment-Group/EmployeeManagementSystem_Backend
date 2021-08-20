@@ -7,15 +7,15 @@ const {
   loginEmployee,
   registerEmployee,
   updateEmployeeProfile,
-  deleteEmployee
+  deleteEmployee,
+  getAllEmployeesList
 } = require("../controllers/Employee.controller");
 
-
+router.get("/all",getAllEmployeesList);
 router.post("/register", registerEmployee);
 router.post("/login", loginEmployee);
 router.get("/", auth, getEmployeeDetails);
-router.put("/updateprofile/:id", auth, updateEmployeeProfile);
-router.delete("/:id", auth, deleteEmployee);
-
+router.put("/updateprofile/:id", updateEmployeeProfile);
+router.delete("/:id", deleteEmployee);
 
 module.exports = router;
