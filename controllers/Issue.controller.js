@@ -1,5 +1,27 @@
 const Issue = require("../models/Issue.model");
 
+//get Issue details
+const getAllIssueById = async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id);
+    res.json(issue);
+  } catch(err) {
+    console.log(err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+//get all Issue details
+const getAllIssuesList = async (req, res) => {
+  try {
+    const issuesList = await Issue.find();
+    res.json(issuesList);
+  } catch(err) {
+    console.log(err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
 //Delete Issues
 const deleteIssue = async (req, res) => {
     try {
@@ -37,4 +59,4 @@ const editIssue = async (req, res) => {
       return res.status(500).send("Server Error");
     }
   };
-module.exports = { deleteIssue, editIssue };
+module.exports = { deleteIssue, editIssue, getAllIssuesList, getAllIssueById };
