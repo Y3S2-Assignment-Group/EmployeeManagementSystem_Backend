@@ -38,19 +38,21 @@ const changeIssueStatusTodoToInProgress = async (req, res) => {
     const sprint = await Sprint.findById(req.params.id);
 
     //Move Issue from Todo to InProgress Status
-    sprint.inProgressList.unshift(req.body.issue);
+    await sprint.inProgressList.unshift(req.body.issue);
+    sprint.save().then(() => {
+      //Remove Issue from Todo
+      //GET remove index
+      const removeIndex = sprint.toDoList
+        .map((item) => item._id)
+        .indexOf(req.body.issue._id);
 
-    //Remove Issue from Todo
-    //GET remove index
-    const removeIndex = sprint.toDoList
-      .map((item) => item.id)
-      .indexOf(req.body.issue._id);
+      sprint.toDoList.splice(removeIndex, 1);
 
-    sprint.toDoList.splice(removeIndex, 1);
+      sprint.save();
 
-    await sprint.save();
+      res.json(sprint);
+    });
 
-    res.json(sprint);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
@@ -63,19 +65,21 @@ const changeIssueStatusInProgressToDone = async (req, res) => {
     const sprint = await Sprint.findById(req.params.id);
 
     //Move Issue from InProgress to Done Status
-    sprint.doneList.unshift(req.body.issue);
+    await sprint.doneList.unshift(req.body.issue);
+    sprint.save().then(() => {
+      //Remove Issue from InProgress
+      //GET remove index
+      const removeIndex = sprint.inProgressList
+        .map((item) => item._id)
+        .indexOf(req.body.issue._id);
 
-    //Remove Issue from InProgress
-    //GET remove index
-    const removeIndex = sprint.inProgressList
-      .map((item) => item.id)
-      .indexOf(req.body.issue._id);
+      sprint.inProgressList.splice(removeIndex, 1);
 
-    sprint.inProgressList.splice(removeIndex, 1);
+      sprint.save();
 
-    await sprint.save();
+      res.json(sprint);
+    });
 
-    res.json(sprint);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");

@@ -2,6 +2,8 @@ const Employee = require("../models/Employee.model");
 const Project = require("../models/Project.model");
 const Sprint = require("../models/Sprint.model");
 const ProjectManager = require("../models/ProjectManager.model");
+const Feedback = require("../models/Feedback.model");
+const Issue = require("../models/Issue.model");
 
 //get All Projects details
 const getAllProjects = async (req, res) => {
@@ -44,6 +46,13 @@ const getProjectDetails = async (req, res) => {
             model: "Issue",
           },
         ],
+      })
+      .populate({
+        path: "sprintList",
+        populate: {
+          path: "feedbackList",
+          model: "Feedback",
+        },
       });
     res.json(project);
   } catch (err) {
@@ -167,11 +176,11 @@ const deleteProject = async (req, res) => {
 
     //Remove Project from Project Manager's Project List
     //GET remove index
-    const removeIndex = projectManager.projectsList
+    const removeIndexPM = await projectManager.projectsList
       .map((item) => item._id)
       .indexOf(req.params.id);
 
-    projectManager.projectsList.splice(removeIndex, 1);
+    await projectManager.projectsList.splice(removeIndexPM, 1);
 
     await projectManager.save();
 
@@ -179,20 +188,72 @@ const deleteProject = async (req, res) => {
     await projToDelete.employeeList.forEach(async (singleEmployee) => {
       const employee = await Employee.findById(singleEmployee._id);
       //Remove Employee from Employee's Project List
-      //GET remove index
-      const removeIndex = employee.projectsList
+      //GET remove index 
+      const removeIndexEmp = await employee.projectsList
         .map((item) => item._id)
         .indexOf(req.params.id);
 
-      employee.projectsList.splice(removeIndex, 1);
+      await employee.projectsList.splice(removeIndexEmp, 1);
 
       await employee.save();
     });
 
     //Remove all sprints assigned to the project
-    await projToDelete.sprintList.forEach(async (singleSprint) => {
-      await Sprint.findByIdAndDelete(singleSprint._id);
-    });
+    if (projToDelete.sprintList.length > 0) {
+      await projToDelete.sprintList.forEach(async (singleSprint) => {
+        console.log("sprintList id : " + singleSprint._id);
+
+        const sprintToBeDeleted = await Sprint.findById(singleSprint._id);
+
+        //Remove all feedbacks assigned to the given sprint
+        if (
+          sprintToBeDeleted.feedbackList &&
+          sprintToBeDeleted.feedbackList.length > 0
+        ) {
+          await sprintToBeDeleted.feedbackList.forEach(
+            async (singleFeedBack) => {
+              console.log("feedback id : " + singleFeedBack._id);
+              await Feedback.findByIdAndDelete(singleFeedBack._id);
+            }
+          );
+        }
+
+        //Remove all todo issues assigned to the given sprint
+        if (
+          sprintToBeDeleted.toDoList &&
+          sprintToBeDeleted.toDoList.length > 0
+        ) {
+          await sprintToBeDeleted.toDoList.forEach(async (singleIssue) => {
+            console.log("toDoList singleIssue id : " + singleIssue._id);
+            await Issue.findByIdAndDelete(singleIssue._id);
+          });
+        }
+
+        //Remove all InProgress issues assigned to the given sprint
+        if (
+          sprintToBeDeleted.inProgressList &&
+          sprintToBeDeleted.inProgressList.length > 0
+        ) {
+          await sprintToBeDeleted.inProgressList.forEach(async (singleIssue) => {
+            console.log("inProgressList singleIssue id : " + singleIssue._id);
+            await Issue.findByIdAndDelete(singleIssue._id);
+          });
+        }
+
+        //Remove all doneL ist issues assigned to the given sprint
+        if (
+          sprintToBeDeleted.doneList &&
+          sprintToBeDeleted.doneList.length > 0
+        ) {
+          await sprintToBeDeleted.doneList.forEach(async (singleIssue) => {
+            console.log("doneList singleIssue id : " + singleIssue._id);
+            await Issue.findByIdAndDelete(singleIssue._id);
+          });
+        }
+
+        await Sprint.findByIdAndDelete(singleSprint._id);
+      });
+    }
 
     Project.findByIdAndDelete(req.params.id)
       .then(() => {
