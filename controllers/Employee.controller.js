@@ -112,4 +112,50 @@ const registerEmployee = async (req, res) => {
   }
 };
 
-module.exports = { getEmployeeDetails, loginEmployee , registerEmployee};
+
+//Update profile employee
+const updateEmployeeProfile = async (req, res) => {
+  try {
+    const user = await Employee.findById(req.params.id);
+
+    if (user != null) {
+      Employee.findByIdAndUpdate(req.params.id).then(async (userProfile) => {
+        userProfile.name = req.body.name;
+        userProfile.profileImg = req.body.profileImg;
+        userProfile.username = req.body.username;
+        userProfile.mobileNumber = req.body.mobileNumber;
+        if (req.body.password) {
+          //Encrypt Password
+          //10 is enogh..if you want more secured.user a value more than 10
+          const salt = await bcrypt.genSalt(10);
+          //hashing password
+          userProfile.password = await bcrypt.hash(req.body.password, salt);
+        }
+
+        userProfile
+          .save()
+          .then(() => res.json("User Profile Updated!"))
+          .catch((err) => res.status(400).json("Error: " + err));
+      });
+    }
+  } catch (err) {
+    //Something wrong with the server
+    console.error(err.message);
+    return res.status(500).send("Server Error");
+  }
+};
+
+//Delete Employee
+const deleteEmployee = async (req, res) => {
+  try {
+    Employee.findByIdAndDelete(req.params.id)
+      .then(() => {
+        res.json("Employee Deleted");
+      })
+      .catch((err) => res.status(400).json("Error: " + err));
+  } catch (err) {
+    res.status(500).send("Server Error");
+  }
+};
+
+module.exports = { getEmployeeDetails, loginEmployee , registerEmployee,updateEmployeeProfile, deleteEmployee};

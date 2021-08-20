@@ -5,6 +5,9 @@ const ProjectManagerSchema = new Schema({
     name: {
         type: String,
     },
+    profileImg:{
+        type: String,
+    },
     username: {
         type: String,
     },
@@ -16,6 +19,9 @@ const ProjectManagerSchema = new Schema({
         type: String,
     },
     mobileNumber: {
+        type: String,
+    },
+    address: {
         type: String,
     },
     salary: {
@@ -40,4 +46,4 @@ const ProjectManagerSchema = new Schema({
     ],
 });
 
-module.exports = Admin = mongoose.model("ProjectManager", ProjectManagerSchema);
+module.exports = ProjectManager = mongoose.model("ProjectManager", ProjectManagerSchema);

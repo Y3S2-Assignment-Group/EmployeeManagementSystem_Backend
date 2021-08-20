@@ -26,4 +26,4 @@ const ProjectSchema = new Schema({
     ],
 });
 
-module.exports = Admin = mongoose.model("Project", ProjectSchema);
+module.exports = Project = mongoose.model("Project", ProjectSchema);

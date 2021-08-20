@@ -62,14 +62,16 @@ const loginProjectManager = async (req, res) => {
 
 //Register ProjectManager
 const registerProjectManager = async (req, res) => {
-  const { name, username, email, password, mobileNumber,rate } = req.body;
+  const { name, username, email, password, mobileNumber, rate } = req.body;
 
   try {
     //See if user Exist
     let user = await ProjectManager.findOne({ email });
 
     if (user) {
-      return res.status(400).json({ errors: [{ msg: "ProjectManager already exist" }] });
+      return res
+        .status(400)
+        .json({ errors: [{ msg: "ProjectManager already exist" }] });
     }
 
     //create a user instance
@@ -117,4 +119,42 @@ const registerProjectManager = async (req, res) => {
   }
 };
 
-module.exports = { getProjectManagerDetails, loginProjectManager, registerProjectManager };
+//Update ProjectManager ProfileDetails
+const updateProjectManagerProfile = async (req, res) => {
+  try {
+    const user = await ProjectManager.findById(req.params.id);
+
+    if (user != null) {
+      ProjectManager.findByIdAndUpdate(req.params.id).then(async (userProfile) => {
+        userProfile.name = req.body.name;
+        userProfile.profileImg = req.body.profileImg;
+        userProfile.username = req.body.username;
+        userProfile.mobileNumber = req.body.mobileNumber;
+        userProfile.address = req.body.address;
+        if (req.body.password) {
+          //Encrypt Password
+          //10 is enogh..if you want more secured.user a value more than 10
+          const salt = await bcrypt.genSalt(10);
+          //hashing password
+          userProfile.password = await bcrypt.hash(req.body.password, salt);
+        }
+
+        userProfile
+          .save()
+          .then(() => res.json("User Profile Updated!"))
+          .catch((err) => res.status(400).json("Error: " + err));
+      });
+    }
+  } catch (err) {
+    //Something wrong with the server
+    console.error(err.message);
+    return res.status(500).send("Server Error");
+  }
+};
+
+module.exports = {
+  getProjectManagerDetails,
+  loginProjectManager,
+  registerProjectManager,
+  updateProjectManagerProfile,
+};

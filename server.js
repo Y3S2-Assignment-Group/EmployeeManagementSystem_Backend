@@ -26,6 +26,14 @@ app.use("/api/employee", require("./routes/Employee.route"));
 //-------------------Employee---------------------
 app.use("/api/projectmanager", require("./routes/ProjectManager.route"));
 
+//-------------------Project---------------------
+app.use("/api/project", require("./routes/Project.route"));
+
+//-------------------Sprint---------------------
+app.use("/api/sprint", require("./routes/Sprint.route"));
+
+//-------------------Issue---------------------
+app.use("/api/issue", require("./routes/Issue.route"));
 
 const PORT = process.env.PORT || 5000;
 

@@ -30,4 +30,4 @@ const SprintSchema = new Schema({
 
 });
 
-module.exports = Admin = mongoose.model("Sprint", SprintSchema);
+module.exports = Sprint = mongoose.model("Sprint", SprintSchema);

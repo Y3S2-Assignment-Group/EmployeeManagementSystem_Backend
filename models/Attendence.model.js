@@ -13,4 +13,4 @@ const AttendenceSchema = new Schema({
     }
 });
 
-module.exports = Admin = mongoose.model("Attendence", AttendenceSchema);
+module.exports = Attendence = mongoose.model("Attendence", AttendenceSchema);

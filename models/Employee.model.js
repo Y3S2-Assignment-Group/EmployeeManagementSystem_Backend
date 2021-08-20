@@ -45,6 +45,12 @@ const EmployeeSchema = new Schema({
           ref: "Comment"
         }
     ],
+    profileImg: {
+        type: String,
+    },
+    address: {
+        type: String,
+    },
 });
 
-module.exports = Admin = mongoose.model("Employee", EmployeeSchema);
+module.exports = Employee = mongoose.model("Employee", EmployeeSchema);

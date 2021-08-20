@@ -7,4 +7,4 @@ const Feedback = new Schema({
     }
 });
 
-module.exports = Admin = mongoose.model("Feedback", Feedback);
+module.exports = Feedback = mongoose.model("Feedback", Feedback);

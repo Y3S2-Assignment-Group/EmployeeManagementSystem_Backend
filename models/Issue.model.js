@@ -23,4 +23,4 @@ const IssueSchema = new Schema({
     }
 });
 
-module.exports = Admin = mongoose.model("Issue", IssueSchema);
+module.exports = Issue = mongoose.model("Issue", IssueSchema);
