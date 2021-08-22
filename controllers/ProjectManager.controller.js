@@ -88,6 +88,8 @@ const registerProjectManager = async (req, res) => {
         .json({ errors: [{ msg: "ProjectManager already exist" }] });
     }
 
+    const profileImg = "https://firebasestorage.googleapis.com/v0/b/econnecteee.appspot.com/o/profileImg.jpg?alt=media&token=46df70d2-9365-4a45-af63-b21c44585f9c"
+
     //create a user instance
     user = new ProjectManager({
       name,
@@ -96,6 +98,7 @@ const registerProjectManager = async (req, res) => {
       password,
       mobileNumber,
       rate,
+      profileImg
     });
 
     //Encrypt Password

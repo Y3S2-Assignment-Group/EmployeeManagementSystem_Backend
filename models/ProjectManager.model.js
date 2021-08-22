@@ -30,6 +30,9 @@ const ProjectManagerSchema = new Schema({
     rate: {
         type: Number,
     },
+    profileImg: {
+        type: String,
+    },
     commentList: [{
         type:Schema.Types.ObjectId,
         ref:"Comment"

@@ -18,6 +18,9 @@ const AdminSchema = new Schema({
   mobileNumber: {
     type: String,
   },
+  profileImg: {
+    type: String,
+},
 });
 
 module.exports = Admin = mongoose.model("Admin", AdminSchema);

@@ -38,15 +38,15 @@ const changeIssueStatusTodoToInProgress = async (req, res) => {
     const sprint = await Sprint.findById(req.params.id);
 
     //Move Issue from Todo to InProgress Status
-    await sprint.inProgressList.unshift(req.body.issue);
-    sprint.save().then(() => {
+    sprint.inProgressList.unshift(req.body.issue);
+    sprint.save().then(async() => {
       //Remove Issue from Todo
       //GET remove index
-      const removeIndex = sprint.toDoList
+      const removeIndex = await sprint.toDoList
         .map((item) => item._id)
-        .indexOf(req.body.issue._id);
+        .indexOf(req.body.issue);
 
-      sprint.toDoList.splice(removeIndex, 1);
+        await sprint.toDoList.splice(removeIndex, 1);
 
       sprint.save();
 
@@ -64,16 +64,16 @@ const changeIssueStatusInProgressToDone = async (req, res) => {
   try {
     const sprint = await Sprint.findById(req.params.id);
 
-    //Move Issue from InProgress to Done Status
-    await sprint.doneList.unshift(req.body.issue);
-    sprint.save().then(() => {
-      //Remove Issue from InProgress
+    //Move Issue from InProgress to doneList Status
+    sprint.doneList.unshift(req.body.issue);
+    sprint.save().then(async() => {
+      //Remove Issue from Todo
       //GET remove index
-      const removeIndex = sprint.inProgressList
+      const removeIndex = await sprint.inProgressList
         .map((item) => item._id)
-        .indexOf(req.body.issue._id);
+        .indexOf(req.body.issue);
 
-      sprint.inProgressList.splice(removeIndex, 1);
+        await sprint.inProgressList.splice(removeIndex, 1);
 
       sprint.save();
 

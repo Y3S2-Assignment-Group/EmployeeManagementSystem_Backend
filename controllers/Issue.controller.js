@@ -41,7 +41,7 @@ const editIssue = async (req, res) => {
       const issue = await Issue.findById(req.params.id);
   
       if (issue != null) {
-        Issue.findByIdAndUpdate(req.params.id).then(async (updatedIssue) => {
+        await Issue.findByIdAndUpdate(req.params.id).then((updatedIssue) => {
             updatedIssue.issueName = req.body.issueName;
             updatedIssue.description = req.body.description;
             updatedIssue.points = req.body.points;
@@ -49,13 +49,11 @@ const editIssue = async (req, res) => {
   
             updatedIssue
             .save()
-            .then(() => res.json("Issue Updated!"))
-            .catch((err) => res.status(400).json("Error: " + err));
+            .then((response) => res.status(200).json(response))
         });
       }
     } catch (err) {
       //Something wrong with the server
-      console.error(err.message);
       return res.status(500).send("Server Error");
     }
   };

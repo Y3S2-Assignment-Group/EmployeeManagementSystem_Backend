@@ -63,7 +63,7 @@ const loginAdmin = async (req, res) => {
 //Register admin
 const registerAdmin = async (req, res) => {
   const { name, username, email, password, mobileNumber } = req.body;
-
+  
   try {
     //See if user Exist
     let user = await Admin.findOne({ email });
@@ -72,6 +72,8 @@ const registerAdmin = async (req, res) => {
       return res.status(400).json({ errors: [{ msg: "Admin already exist" }] });
     }
 
+    const profileImg = "https://firebasestorage.googleapis.com/v0/b/econnecteee.appspot.com/o/profileImg.jpg?alt=media&token=46df70d2-9365-4a45-af63-b21c44585f9c"
+
     //create a user instance
     user = new Admin({
       name,
@@ -79,6 +81,7 @@ const registerAdmin = async (req, res) => {
       email,
       password,
       mobileNumber,
+      profileImg
     });
 
     //Encrypt Password

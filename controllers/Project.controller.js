@@ -36,14 +36,26 @@ const getProjectDetails = async (req, res) => {
           {
             path: "toDoList",
             model: "Issue",
+            populate: {
+              path: "assignee",
+              select: "name profileImg",
+            },
           },
           {
             path: "inProgressList",
             model: "Issue",
+            populate: {
+              path: "assignee",
+              select: "name profileImg",
+            },
           },
           {
             path: "doneList",
             model: "Issue",
+            populate: {
+              path: "assignee",
+              select: "name profileImg",
+            },
           },
         ],
       })
@@ -105,7 +117,7 @@ const updateProject = async (req, res) => {
 
           projectExistingProject
             .save()
-            .then(() => res.json("Project Updated!"))
+            .then((response) => res.json(response))
             .catch((err) => res.status(400).json("Error: " + err));
         }
       );
@@ -188,7 +200,7 @@ const deleteProject = async (req, res) => {
     await projToDelete.employeeList.forEach(async (singleEmployee) => {
       const employee = await Employee.findById(singleEmployee._id);
       //Remove Employee from Employee's Project List
-      //GET remove index 
+      //GET remove index
       const removeIndexEmp = await employee.projectsList
         .map((item) => item._id)
         .indexOf(req.params.id);
@@ -234,10 +246,12 @@ const deleteProject = async (req, res) => {
           sprintToBeDeleted.inProgressList &&
           sprintToBeDeleted.inProgressList.length > 0
         ) {
-          await sprintToBeDeleted.inProgressList.forEach(async (singleIssue) => {
-            console.log("inProgressList singleIssue id : " + singleIssue._id);
-            await Issue.findByIdAndDelete(singleIssue._id);
-          });
+          await sprintToBeDeleted.inProgressList.forEach(
+            async (singleIssue) => {
+              console.log("inProgressList singleIssue id : " + singleIssue._id);
+              await Issue.findByIdAndDelete(singleIssue._id);
+            }
+          );
         }
 
         //Remove all doneL ist issues assigned to the given sprint

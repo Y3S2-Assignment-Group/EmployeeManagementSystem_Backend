@@ -3,7 +3,6 @@ const Employee = require("../models/Employee.model");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 
-
 //get Employee details
 const getAllEmployeesList = async (req, res) => {
   try {
@@ -11,7 +10,7 @@ const getAllEmployeesList = async (req, res) => {
     //-password : dont return the pasword
     const empList = await Employee.find().select("-password");
     res.json(empList);
-  } catch(err) {
+  } catch (err) {
     console.log(err.message);
     res.status(500).send("Server Error");
   }
@@ -22,7 +21,39 @@ const getEmployeeDetails = async (req, res) => {
   try {
     //get user details
     //-password : dont return the pasword
-    const user = await Employee.findById(req.user.id).select("-password");
+    const user = await Employee.findById(req.user.id)
+      .select("-password")
+      .populate({
+        path: "projectsList",
+        populate: {
+          path: "projectManager",
+          select:"name"
+        },
+      })
+      .populate({
+        path: "projectsList",
+        populate: {
+          path: "sprintList",
+          match: { isClosed: false },//filter not closed sprints
+          populate: [
+            {
+              path: "toDoList",
+              model: "Issue",
+              match: { assignee: req.user.id },
+            },
+            {
+              path: "inProgressList",
+              model: "Issue",
+              match: { assignee: req.user.id },
+            },
+            {
+              path: "doneList",
+              model: "Issue",
+              match: { assignee: req.user.id },
+            },
+          ],
+        },
+      });
     res.json(user);
   } catch {
     console.log(err.message);
@@ -76,19 +107,32 @@ const loginEmployee = async (req, res) => {
 
 //Register user
 const registerEmployee = async (req, res) => {
-  const { name, username, email, password, mobileNumber,department,rate } = req.body;
+  const { name, username, email, password, mobileNumber, department, rate } =
+    req.body;
 
   try {
     //See if user Exist
     let user = await Employee.findOne({ email });
 
     if (user) {
-      return res.status(400).json({ errors: [{ msg: "Employee already exist" }] });
+      return res
+        .status(400)
+        .json({ errors: [{ msg: "Employee already exist" }] });
     }
+
+    const profileImg =
+      "https://firebasestorage.googleapis.com/v0/b/econnecteee.appspot.com/o/profileImg.jpg?alt=media&token=46df70d2-9365-4a45-af63-b21c44585f9c";
 
     //create a user instance
     user = new Employee({
-        name, username, email, password, mobileNumber,department,rate
+      name,
+      username,
+      email,
+      password,
+      mobileNumber,
+      department,
+      rate,
+      profileImg,
     });
 
     //Encrypt Password
@@ -100,32 +144,15 @@ const registerEmployee = async (req, res) => {
     user.password = await bcrypt.hash(password, salt);
 
     //save user to the database
-    await user.save();
-
-    //Return jsonwebtoken
-
-    const payload = {
-      user: {
-        id: user.id,
-      },
-    };
-
-    jwt.sign(
-      payload,
-      config.get("jwtSecret"),
-      { expiresIn: 360000 },
-      (err, token) => {
-        if (err) throw err;
-        res.json({ token });
-      }
-    );
+    await user.save().then((response) => {
+      res.json(response);
+    });
   } catch (err) {
     //Something wrong with the server
     console.error(err.message);
     return res.status(500).send("Server Error");
   }
 };
-
 
 //Update profile employee
 const updateEmployeeProfile = async (req, res) => {
@@ -135,7 +162,9 @@ const updateEmployeeProfile = async (req, res) => {
     if (user != null) {
       Employee.findByIdAndUpdate(req.params.id).then(async (userProfile) => {
         userProfile.name = req.body.name;
-        userProfile.profileImg = req.body.profileImg;
+        if (req.body.profileImg) {
+          userProfile.profileImg = req.body.profileImg;
+        }
         userProfile.username = req.body.username;
         userProfile.mobileNumber = req.body.mobileNumber;
         if (req.body.password) {
@@ -148,7 +177,7 @@ const updateEmployeeProfile = async (req, res) => {
 
         userProfile
           .save()
-          .then(() => res.json("User Profile Updated!"))
+          .then((response) => res.json(response))
           .catch((err) => res.status(400).json("Error: " + err));
       });
     }
@@ -172,4 +201,11 @@ const deleteEmployee = async (req, res) => {
   }
 };
 
-module.exports = { getEmployeeDetails, loginEmployee , registerEmployee,updateEmployeeProfile, deleteEmployee,getAllEmployeesList};
+module.exports = {
+  getEmployeeDetails,
+  loginEmployee,
+  registerEmployee,
+  updateEmployeeProfile,
+  deleteEmployee,
+  getAllEmployeesList,
+};
