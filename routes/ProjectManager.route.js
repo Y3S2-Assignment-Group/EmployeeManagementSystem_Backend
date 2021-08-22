@@ -11,6 +11,6 @@ router.post("/register", registerProjectManager);
 router.post("/login", loginProjectManager);
 router.get("/", auth, getProjectManagerDetails);
 router.delete("/:id", deleteProjectManager);
-router.put("/updateprofile/:id", auth, updateProjectManagerProfile);
+router.put("/updateprofile/:id", updateProjectManagerProfile);
 
 module.exports = router;
