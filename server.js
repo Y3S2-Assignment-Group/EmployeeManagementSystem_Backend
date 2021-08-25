@@ -23,7 +23,7 @@ app.use("/api/admin", require("./routes/Admin.route"));
 //-------------------Employee---------------------
 app.use("/api/employee", require("./routes/Employee.route"));
 
-//-------------------Employee---------------------
+//-------------------Product Manager---------------------
 app.use("/api/projectmanager", require("./routes/ProjectManager.route"));
 
 //-------------------Project---------------------

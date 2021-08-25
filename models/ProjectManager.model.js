@@ -33,6 +33,9 @@ const ProjectManagerSchema = new Schema({
     profileImg: {
         type: String,
     },
+    persistedFaceId:{
+        type: String,
+    },
     commentList: [{
         type:Schema.Types.ObjectId,
         ref:"Comment"

@@ -3,10 +3,15 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 
 const {
-    getProjectManagerDetails, loginProjectManager, registerProjectManager,updateProjectManagerProfile,getAllProjectManagerList,deleteProjectManager
+    getProjectManagerDetails, loginProjectManager, registerProjectManager, updateProjectManagerProfile, getAllProjectManagerList, deleteProjectManager, confirmPMFaceAuthentication,
+    confirmInTime,
+    confirmOutTime
 } = require("../controllers/ProjectManager.controller");
 
-router.get("/all",getAllProjectManagerList)
+router.put("/confirmouttime/:attendenceId", confirmOutTime);
+router.put("/confirmintime/:userid", confirmInTime);
+router.get("/confirmface/:persistedFaceId", confirmPMFaceAuthentication);
+router.get("/all", getAllProjectManagerList)
 router.post("/register", registerProjectManager);
 router.post("/login", loginProjectManager);
 router.get("/", auth, getProjectManagerDetails);
