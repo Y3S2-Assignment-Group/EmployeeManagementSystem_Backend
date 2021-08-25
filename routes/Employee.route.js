@@ -8,9 +8,15 @@ const {
   registerEmployee,
   updateEmployeeProfile,
   deleteEmployee,
-  getAllEmployeesList
+  getAllEmployeesList,
+  confirmEmployeeFaceAuthentication,
+  confirmInTime,
+  confirmOutTime
 } = require("../controllers/Employee.controller");
 
+router.put("/confirmouttime/:attendenceId",confirmOutTime);
+router.put("/confirmintime/:userid",confirmInTime);
+router.get("/confirmface/:persistedFaceId",confirmEmployeeFaceAuthentication);
 router.get("/all",getAllEmployeesList);
 router.post("/register", registerEmployee);
 router.post("/login", loginEmployee);

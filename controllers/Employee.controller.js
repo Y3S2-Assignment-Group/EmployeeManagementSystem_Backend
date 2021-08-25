@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const Employee = require("../models/Employee.model");
+const Attendence = require("../models/Attendence.model");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 
@@ -27,14 +28,15 @@ const getEmployeeDetails = async (req, res) => {
         path: "projectsList",
         populate: {
           path: "projectManager",
-          select:"name"
+          select: "name",
         },
       })
+      .populate({ path: "attendanceList",model:"Attendence" })
       .populate({
         path: "projectsList",
         populate: {
           path: "sprintList",
-          match: { isClosed: false },//filter not closed sprints
+          match: { isClosed: false }, //filter not closed sprints
           populate: [
             {
               path: "toDoList",
@@ -55,7 +57,7 @@ const getEmployeeDetails = async (req, res) => {
         },
       });
     res.json(user);
-  } catch {
+  } catch(err) {
     console.log(err.message);
     res.status(500).send("Server Error");
   }
@@ -165,6 +167,9 @@ const updateEmployeeProfile = async (req, res) => {
         if (req.body.profileImg) {
           userProfile.profileImg = req.body.profileImg;
         }
+        if (req.body.persistedFaceId) {
+          userProfile.persistedFaceId = req.body.persistedFaceId;
+        }
         userProfile.username = req.body.username;
         userProfile.mobileNumber = req.body.mobileNumber;
         if (req.body.password) {
@@ -201,6 +206,82 @@ const deleteEmployee = async (req, res) => {
   }
 };
 
+//Confirm Employee Face Authentication
+const confirmEmployeeFaceAuthentication = async (req, res) => {
+  try {
+    const emp = await Employee.findOne({
+      persistedFaceId: req.params.persistedFaceId,
+    }).select("_id name username persistedFaceId");
+    res.json(emp);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+//Confirm In Time - Attendence
+const confirmInTime = async (req, res) => {
+  try {
+    const user = await Employee.findById(req.params.userid);
+    console.log(req.params.userid);
+    if (user != null) {
+      console.log("confit");
+      Employee.findByIdAndUpdate(req.params.userid).then(async () => {
+        const { inTime, date } = req.body;
+        try {
+          const newAttendenceObj = new Attendence({
+            inTime,
+            date,
+          });
+
+          //save Issue to the database
+          await newAttendenceObj
+            .save()
+            .then(async (createdAttendenceObj) => {
+              user.attendanceList.unshift(createdAttendenceObj);
+              await user.save();
+              res.json(user);
+            })
+            .catch((err) => res.status(400).json("Error: " + err));
+        } catch (err) {
+          console.error(err.message);
+          res.status(500).send("Server Error");
+        }
+      });
+    }
+  } catch (err) {
+    //Something wrong with the server
+    console.error(err.message);
+    return res.status(500).send("Server Error");
+  }
+};
+
+//Confirm Out Time - Attendence
+const confirmOutTime = async (req, res) => {
+  try {
+      Attendence.findByIdAndUpdate(req.params.attendenceId).then(async (attendence) => {
+        console.log("click")
+        try {
+          attendence.outTime = req.body.outTime
+          await attendence
+            .save()
+            .then(async (createdAttendenceObj) => {
+              res.json(createdAttendenceObj);
+            })
+            .catch((err) => res.status(400).json("Error: " + err));
+        } catch (err) {
+          console.error(err.message);
+          res.status(500).send("Server Error");
+        }
+      });
+    }
+   catch (err) {
+    //Something wrong with the server
+    console.error(err.message);
+    return res.status(500).send("Server Error");
+  }
+};
+
 module.exports = {
   getEmployeeDetails,
   loginEmployee,
@@ -208,4 +289,7 @@ module.exports = {
   updateEmployeeProfile,
   deleteEmployee,
   getAllEmployeesList,
+  confirmEmployeeFaceAuthentication,
+  confirmInTime,
+  confirmOutTime
 };

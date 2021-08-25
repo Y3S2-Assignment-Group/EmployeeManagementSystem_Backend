@@ -30,7 +30,7 @@ const EmployeeSchema = new Schema({
     attendanceList: [
         {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Attendance"
+          ref: "Attendence"
         }
     ],
     department: {
@@ -46,6 +46,9 @@ const EmployeeSchema = new Schema({
         }
     ],
     profileImg: {
+        type: String,
+    },
+    persistedFaceId:{
         type: String,
     },
     address: {
