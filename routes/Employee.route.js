@@ -11,7 +11,8 @@ const {
   getAllEmployeesList,
   confirmEmployeeFaceAuthentication,
   confirmInTime,
-  confirmOutTime
+  confirmOutTime,
+  loginEmployeeWithFaceAuthetication
 } = require("../controllers/Employee.controller");
 
 router.put("/confirmouttime/:attendenceId",confirmOutTime);
@@ -20,6 +21,7 @@ router.get("/confirmface/:persistedFaceId",confirmEmployeeFaceAuthentication);
 router.get("/all",getAllEmployeesList);
 router.post("/register", registerEmployee);
 router.post("/login", loginEmployee);
+router.post("/loginwithfaceauth", loginEmployeeWithFaceAuthetication);
 router.get("/", auth, getEmployeeDetails);
 router.put("/updateprofile/:id", updateEmployeeProfile);
 router.delete("/:id", deleteEmployee);

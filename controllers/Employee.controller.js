@@ -107,6 +107,42 @@ const loginEmployee = async (req, res) => {
   }
 };
 
+//Authenticate User Face Authetication and get token
+const loginEmployeeWithFaceAuthetication = async (req, res) => {
+  const { persistedFaceId } = req.body;
+
+  try {
+    //See if user Exist
+    let user = await Employee.findOne({ persistedFaceId });
+
+    if (!user) {
+      return res.status(400).json({ errors: [{ msg: "Invalid Credentials" }] });
+    }
+
+    //Return jsonwebtoken
+
+    const payload = {
+      user: {
+        id: user.id,
+      },
+    };
+
+    jwt.sign(
+      payload,
+      config.get("jwtSecret"),
+      { expiresIn: 360000 },
+      (err, token) => {
+        if (err) throw err;
+        res.json({ token });
+      }
+    );
+  } catch (err) {
+    //Something wrong with the server
+    console.error(err.message);
+    return res.status(500).send("Server Error");
+  }
+};
+
 //Register user
 const registerEmployee = async (req, res) => {
   const { name, username, email, password, mobileNumber, department, rate } =
@@ -291,5 +327,6 @@ module.exports = {
   getAllEmployeesList,
   confirmEmployeeFaceAuthentication,
   confirmInTime,
-  confirmOutTime
+  confirmOutTime,
+  loginEmployeeWithFaceAuthetication
 };
