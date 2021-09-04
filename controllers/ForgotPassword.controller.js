@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const mg = require("nodemailer-mailgun-transport")
 const ForgotPassword = require("../models/ForgotPassword.model");
 const bcrypt = require("bcryptjs");
 const Employee = require("../models/Employee.model");
@@ -57,11 +58,17 @@ const generateResetTokenForEmployee = async (req, res) => {
 async function sendMail(email, resetKey) {
   // create reusable transporter object using the default SMTP transport
   let transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
       user: "y3s2assignmentgroupsliit@gmail.com", // generated ethereal user
       pass: "y3s21998", // generated ethereal password
     },
+    tls: {
+        // do not fail on invalid certs
+        rejectUnauthorized: false
+    }
   });
 
   // send mail with defined transport object
