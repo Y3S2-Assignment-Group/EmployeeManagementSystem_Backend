@@ -2,6 +2,8 @@ const bcrypt = require("bcryptjs");
 const ProjectManager = require("../models/ProjectManager.model");
 const jwt = require("jsonwebtoken");
 const config = require("config");
+const moment = require("moment");
+
 
 //get All ProjectManager List
 const getAllProjectManagerList = async (req, res) => {
@@ -125,7 +127,7 @@ const registerProjectManager = async (req, res) => {
     }
 
     const profileImg = "https://firebasestorage.googleapis.com/v0/b/econnecteee.appspot.com/o/profileImg.jpg?alt=media&token=46df70d2-9365-4a45-af63-b21c44585f9c"
-
+    const salary = 0.0;
     //create a user instance
     user = new ProjectManager({
       name,
@@ -134,7 +136,8 @@ const registerProjectManager = async (req, res) => {
       password,
       mobileNumber,
       rate,
-      profileImg
+      profileImg,
+      salary
     });
 
     //Encrypt Password
@@ -238,7 +241,6 @@ const confirmPMFaceAuthentication = async (req, res) => {
 const confirmInTime = async (req, res) => {
   try {
     const user = await ProjectManager.findById(req.params.userid);
-    console.log(req.params.userid);
     if (user != null) {
       ProjectManager.findByIdAndUpdate(req.params.userid).then(async () => {
         const { inTime, date } = req.body;
@@ -253,6 +255,7 @@ const confirmInTime = async (req, res) => {
             .save()
             .then(async (createdAttendenceObj) => {
               user.attendanceList.unshift(createdAttendenceObj);
+              await calculatePMSalary(req.params.userid);
               await user.save();
               res.json(user);
             })
@@ -293,6 +296,42 @@ const confirmOutTime = async (req, res) => {
     //Something wrong with the server
     console.error(err.message);
     return res.status(500).send("Server Error");
+  }
+};
+
+calculatePMSalary = async (userID) => {
+  try {
+    let date_ob = new Date();
+    // current month
+    let month = date_ob.getMonth() + 1;
+    // current year
+    let year = date_ob.getFullYear();
+
+    const user = await ProjectManager.findById(userID).populate({
+      path: "attendanceList",
+      model: "Attendence",
+    });
+    let days = 0;
+
+    user.attendanceList.forEach((attendance) => {
+      let mon = moment().month(attendance.date.slice(5, 8)).format("M");
+      let yer = attendance.date.slice(12, 16);
+      console.log(attendance)
+
+      if (month == mon && yer == year) {
+        ++days;
+
+      }
+
+    });
+    ProjectManager.findByIdAndUpdate(userID).then(async (userProfile) => {
+      userProfile.salary = user.rate * (days+1);
+      userProfile.save().then((res) => {
+      });
+    });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send("Server Error");
   }
 };
 
