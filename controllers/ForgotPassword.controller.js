@@ -56,16 +56,20 @@ const generateResetTokenForEmployee = async (req, res) => {
 
 // async..await is not allowed in global scope, must use a wrapper
 async function sendMail(email, resetKey) {
-
-  const mailgunAuth = {
-    auth: {
-      api_key: "721a171269b7904976e61ba658ace618-156db0f1-9cb4f340",
-      domain: "econnecteee.web.app"
-    }
-  }
-
   // create reusable transporter object using the default SMTP transport
-  let transporter = nodemailer.createTransport(mg(mailgunAuth));
+  let transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: "y3s2assignmentgroupsliit@gmail.com", // generated ethereal user
+      pass: "y3s21998", // generated ethereal password
+    },
+    tls: {
+        // do not fail on invalid certs
+        rejectUnauthorized: false
+    }
+  });
 
   // send mail with defined transport object
   let info = await transporter.sendMail({
