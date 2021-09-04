@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const mg = require("nodemailer-mailgun-transport")
 const ForgotPassword = require("../models/ForgotPassword.model");
 const bcrypt = require("bcryptjs");
 const Employee = require("../models/Employee.model");
@@ -55,14 +56,16 @@ const generateResetTokenForEmployee = async (req, res) => {
 
 // async..await is not allowed in global scope, must use a wrapper
 async function sendMail(email, resetKey) {
-  // create reusable transporter object using the default SMTP transport
-  let transporter = nodemailer.createTransport({
-    service: "gmail",
+
+  const mailgunAuth = {
     auth: {
-      user: "y3s2assignmentgroupsliit@gmail.com", // generated ethereal user
-      pass: "y3s21998", // generated ethereal password
-    },
-  });
+      api_key: "721a171269b7904976e61ba658ace618-156db0f1-9cb4f340",
+      domain: "econnecteee.web.app"
+    }
+  }
+
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport(mg(mailgunAuth));
 
   // send mail with defined transport object
   let info = await transporter.sendMail({
