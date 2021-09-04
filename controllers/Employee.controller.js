@@ -4,6 +4,7 @@ const Attendence = require("../models/Attendence.model");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 const moment = require("moment");
+const axios = require("axios");
 
 //get Employee details
 const getAllEmployeesList = async (req, res) => {
@@ -235,11 +236,38 @@ const updateEmployeeProfile = async (req, res) => {
 //Delete Employee
 const deleteEmployee = async (req, res) => {
   try {
-    Employee.findByIdAndDelete(req.params.id)
-      .then(() => {
-        res.json("Employee Deleted");
-      })
-      .catch((err) => res.status(400).json("Error: " + err));
+    const user = await Employee.findById(req.params.id);
+
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        "Ocp-Apim-Subscription-Key": "cc8d3f8f4b23401c9e3b36474ecce84d",
+      },
+    };
+
+    if (user.persistedFaceId) {
+      await axios
+        .delete(
+          `https://eastus.api.cognitive.microsoft.com/face/v1.0/largefacelists/employeelist/persistedfaces/${user.persistedFaceId}`,
+          config
+        )
+        .then(async() => {
+          await Employee.findByIdAndDelete(req.params.id)
+            .then(() => {
+              res.json("Employee Deleted");
+            })
+            .catch((err) => res.status(400).json("Error: " + err));
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      await Employee.findByIdAndDelete(req.params.id)
+        .then(() => {
+          res.json("Employee Deleted");
+        })
+        .catch((err) => res.status(400).json("Error: " + err));
+    }
   } catch (err) {
     res.status(500).send("Server Error");
   }
@@ -347,7 +375,7 @@ calculateEmpSalary = async (userID) => {
       }
     });
     Employee.findByIdAndUpdate(userID).then(async (userProfile) => {
-      userProfile.salary = user.rate * (days+1);
+      userProfile.salary = user.rate * (days + 1);
       userProfile.save().then((res) => {
         console.log(res.data);
       });

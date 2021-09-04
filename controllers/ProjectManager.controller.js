@@ -3,7 +3,7 @@ const ProjectManager = require("../models/ProjectManager.model");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 const moment = require("moment");
-
+const axios = require("axios");
 
 //get All ProjectManager List
 const getAllProjectManagerList = async (req, res) => {
@@ -18,13 +18,15 @@ const getAllProjectManagerList = async (req, res) => {
   }
 };
 
-
 //get ProjectManager details
 const getProjectManagerDetails = async (req, res) => {
   try {
     //get user details
     //-password : dont return the pasword
-    const user = await ProjectManager.findById(req.user.id).select("-password").populate("projectsList", "_id projectName descripton").populate({ path: "attendanceList",model:"Attendence" });
+    const user = await ProjectManager.findById(req.user.id)
+      .select("-password")
+      .populate("projectsList", "_id projectName descripton")
+      .populate({ path: "attendanceList", model: "Attendence" });
     res.json(user);
   } catch {
     console.log(err.message);
@@ -126,7 +128,8 @@ const registerProjectManager = async (req, res) => {
         .json({ errors: [{ msg: "ProjectManager already exist" }] });
     }
 
-    const profileImg = "https://firebasestorage.googleapis.com/v0/b/econnecteee.appspot.com/o/profileImg.jpg?alt=media&token=46df70d2-9365-4a45-af63-b21c44585f9c"
+    const profileImg =
+      "https://firebasestorage.googleapis.com/v0/b/econnecteee.appspot.com/o/profileImg.jpg?alt=media&token=46df70d2-9365-4a45-af63-b21c44585f9c";
     const salary = 0.0;
     //create a user instance
     user = new ProjectManager({
@@ -137,7 +140,7 @@ const registerProjectManager = async (req, res) => {
       mobileNumber,
       rate,
       profileImg,
-      salary
+      salary,
     });
 
     //Encrypt Password
@@ -181,28 +184,30 @@ const updateProjectManagerProfile = async (req, res) => {
     const user = await ProjectManager.findById(req.params.id);
 
     if (user != null) {
-      ProjectManager.findByIdAndUpdate(req.params.id).then(async (userProfile) => {
-        userProfile.name = req.body.name;
-        userProfile.profileImg = req.body.profileImg;
-        if (req.body.persistedFaceId) {
-          userProfile.persistedFaceId = req.body.persistedFaceId;
-        }
-        userProfile.username = req.body.username;
-        userProfile.mobileNumber = req.body.mobileNumber;
-        userProfile.address = req.body.address;
-        if (req.body.password) {
-          //Encrypt Password
-          //10 is enogh..if you want more secured.user a value more than 10
-          const salt = await bcrypt.genSalt(10);
-          //hashing password
-          userProfile.password = await bcrypt.hash(req.body.password, salt);
-        }
+      ProjectManager.findByIdAndUpdate(req.params.id).then(
+        async (userProfile) => {
+          userProfile.name = req.body.name;
+          userProfile.profileImg = req.body.profileImg;
+          if (req.body.persistedFaceId) {
+            userProfile.persistedFaceId = req.body.persistedFaceId;
+          }
+          userProfile.username = req.body.username;
+          userProfile.mobileNumber = req.body.mobileNumber;
+          userProfile.address = req.body.address;
+          if (req.body.password) {
+            //Encrypt Password
+            //10 is enogh..if you want more secured.user a value more than 10
+            const salt = await bcrypt.genSalt(10);
+            //hashing password
+            userProfile.password = await bcrypt.hash(req.body.password, salt);
+          }
 
-        userProfile
-          .save()
-          .then(() => res.json("User Profile Updated!"))
-          .catch((err) => res.status(400).json("Error: " + err));
-      });
+          userProfile
+            .save()
+            .then(() => res.json("User Profile Updated!"))
+            .catch((err) => res.status(400).json("Error: " + err));
+        }
+      );
     }
   } catch (err) {
     //Something wrong with the server
@@ -214,11 +219,38 @@ const updateProjectManagerProfile = async (req, res) => {
 //Delete Project Manager
 const deleteProjectManager = async (req, res) => {
   try {
-    ProjectManager.findByIdAndDelete(req.params.id)
-      .then(() => {
-        res.json("Project Manager Deleted");
-      })
-      .catch((err) => res.status(400).json("Error: " + err));
+    const user = await ProjectManager.findById(req.params.id);
+
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        "Ocp-Apim-Subscription-Key": "cc8d3f8f4b23401c9e3b36474ecce84d",
+      },
+    };
+
+    if (user.persistedFaceId) {
+      await axios
+        .delete(
+          `https://eastus.api.cognitive.microsoft.com/face/v1.0/largefacelists/productmanagerlist/persistedfaces/${user.persistedFaceId}`,
+          config
+        )
+        .then(async() => {
+          await ProjectManager.findByIdAndDelete(req.params.id)
+            .then(() => {
+              res.json("Project Manager Deleted");
+            })
+            .catch((err) => res.status(400).json("Error: " + err));
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      await ProjectManager.findByIdAndDelete(req.params.id)
+        .then(() => {
+          res.json("Project Manager Deleted");
+        })
+        .catch((err) => res.status(400).json("Error: " + err));
+    }
   } catch (err) {
     res.status(500).send("Server Error");
   }
@@ -276,10 +308,11 @@ const confirmInTime = async (req, res) => {
 //Confirm Out Time - Attendence
 const confirmOutTime = async (req, res) => {
   try {
-      Attendence.findByIdAndUpdate(req.params.attendenceId).then(async (attendence) => {
-        console.log("click")
+    Attendence.findByIdAndUpdate(req.params.attendenceId).then(
+      async (attendence) => {
+        console.log("click");
         try {
-          attendence.outTime = req.body.outTime
+          attendence.outTime = req.body.outTime;
           await attendence
             .save()
             .then(async (createdAttendenceObj) => {
@@ -290,9 +323,9 @@ const confirmOutTime = async (req, res) => {
           console.error(err.message);
           res.status(500).send("Server Error");
         }
-      });
-    }
-   catch (err) {
+      }
+    );
+  } catch (err) {
     //Something wrong with the server
     console.error(err.message);
     return res.status(500).send("Server Error");
@@ -316,18 +349,15 @@ calculatePMSalary = async (userID) => {
     user.attendanceList.forEach((attendance) => {
       let mon = moment().month(attendance.date.slice(5, 8)).format("M");
       let yer = attendance.date.slice(12, 16);
-      console.log(attendance)
+      console.log(attendance);
 
       if (month == mon && yer == year) {
         ++days;
-
       }
-
     });
     ProjectManager.findByIdAndUpdate(userID).then(async (userProfile) => {
-      userProfile.salary = user.rate * (days+1);
-      userProfile.save().then((res) => {
-      });
+      userProfile.salary = user.rate * (days + 1);
+      userProfile.save().then((res) => {});
     });
   } catch (err) {
     console.log(err.message);
@@ -345,5 +375,5 @@ module.exports = {
   updateProjectManagerProfile,
   getAllProjectManagerList,
   deleteProjectManager,
-  loginProjectManagerWithFaceAuthetication
+  loginProjectManagerWithFaceAuthetication,
 };
