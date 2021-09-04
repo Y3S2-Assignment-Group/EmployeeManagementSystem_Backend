@@ -3,6 +3,7 @@ const Employee = require("../models/Employee.model");
 const Attendence = require("../models/Attendence.model");
 const jwt = require("jsonwebtoken");
 const config = require("config");
+const moment = require("moment");
 
 //get Employee details
 const getAllEmployeesList = async (req, res) => {
@@ -31,7 +32,7 @@ const getEmployeeDetails = async (req, res) => {
           select: "name",
         },
       })
-      .populate({ path: "attendanceList",model:"Attendence" })
+      .populate({ path: "attendanceList", model: "Attendence" })
       .populate({
         path: "projectsList",
         populate: {
@@ -57,7 +58,7 @@ const getEmployeeDetails = async (req, res) => {
         },
       });
     res.json(user);
-  } catch(err) {
+  } catch (err) {
     console.log(err.message);
     res.status(500).send("Server Error");
   }
@@ -161,6 +162,7 @@ const registerEmployee = async (req, res) => {
     const profileImg =
       "https://firebasestorage.googleapis.com/v0/b/econnecteee.appspot.com/o/profileImg.jpg?alt=media&token=46df70d2-9365-4a45-af63-b21c44585f9c";
 
+    const salary = 0.0;
     //create a user instance
     user = new Employee({
       name,
@@ -170,6 +172,7 @@ const registerEmployee = async (req, res) => {
       mobileNumber,
       department,
       rate,
+      salary,
       profileImg,
     });
 
@@ -270,11 +273,12 @@ const confirmInTime = async (req, res) => {
             date,
           });
 
-          //save Issue to the database
+          //save attendance to the database
           await newAttendenceObj
             .save()
             .then(async (createdAttendenceObj) => {
               user.attendanceList.unshift(createdAttendenceObj);
+              await calculateEmpSalary(req.params.userid);
               await user.save();
               res.json(user);
             })
@@ -295,10 +299,11 @@ const confirmInTime = async (req, res) => {
 //Confirm Out Time - Attendence
 const confirmOutTime = async (req, res) => {
   try {
-      Attendence.findByIdAndUpdate(req.params.attendenceId).then(async (attendence) => {
-        console.log("click")
+    Attendence.findByIdAndUpdate(req.params.attendenceId).then(
+      async (attendence) => {
+        console.log("click");
         try {
-          attendence.outTime = req.body.outTime
+          attendence.outTime = req.body.outTime;
           await attendence
             .save()
             .then(async (createdAttendenceObj) => {
@@ -309,12 +314,47 @@ const confirmOutTime = async (req, res) => {
           console.error(err.message);
           res.status(500).send("Server Error");
         }
-      });
-    }
-   catch (err) {
+      }
+    );
+  } catch (err) {
     //Something wrong with the server
     console.error(err.message);
     return res.status(500).send("Server Error");
+  }
+};
+
+//Calculate Salaryconst
+calculateEmpSalary = async (userID) => {
+  try {
+    let date_ob = new Date();
+    // current month
+    let month = date_ob.getMonth() + 1;
+    // current year
+    let year = date_ob.getFullYear();
+
+    const user = await Employee.findById(userID).populate({
+      path: "attendanceList",
+      model: "Attendence",
+    });
+
+    let days = 0;
+
+    user.attendanceList.forEach((attendance) => {
+      let mon = moment().month(attendance.date.slice(5, 8)).format("M");
+      let yer = attendance.date.slice(12, 16);
+      if (month == mon && yer == year) {
+        days++;
+      }
+    });
+    Employee.findByIdAndUpdate(userID).then(async (userProfile) => {
+      userProfile.salary = user.rate * (days+1);
+      userProfile.save().then((res) => {
+        console.log(res.data);
+      });
+    });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send("Server Error");
   }
 };
 
@@ -328,5 +368,6 @@ module.exports = {
   confirmEmployeeFaceAuthentication,
   confirmInTime,
   confirmOutTime,
-  loginEmployeeWithFaceAuthetication
+  loginEmployeeWithFaceAuthetication,
+  calculateEmpSalary,
 };

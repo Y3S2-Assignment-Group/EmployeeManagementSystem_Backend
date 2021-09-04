@@ -12,7 +12,7 @@ const {
   confirmEmployeeFaceAuthentication,
   confirmInTime,
   confirmOutTime,
-  loginEmployeeWithFaceAuthetication
+  loginEmployeeWithFaceAuthetication,
 } = require("../controllers/Employee.controller");
 
 router.put("/confirmouttime/:attendenceId",confirmOutTime);
