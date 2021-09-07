@@ -68,6 +68,7 @@ const getEmployeeDetails = async (req, res) => {
 
 //get Employee details by employe Id
 const getEmployeeDetailsById = async (req, res) => {
+
   try {
     //get user details
     //-password : dont return the pasword
@@ -90,17 +91,17 @@ const getEmployeeDetailsById = async (req, res) => {
             {
               path: "toDoList",
               model: "Issue",
-              match: { assignee: req.user.id },
+              match: { assignee: req.params.id },
             },
             {
               path: "inProgressList",
               model: "Issue",
-              match: { assignee: req.user.id },
+              match: { assignee: req.params.id },
             },
             {
               path: "doneList",
               model: "Issue",
-              match: { assignee: req.user.id },
+              match: { assignee: req.params.id },
             },
           ],
         },
