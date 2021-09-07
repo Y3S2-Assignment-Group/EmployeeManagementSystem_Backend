@@ -13,6 +13,7 @@ const {
   confirmInTime,
   confirmOutTime,
   loginEmployeeWithFaceAuthetication,
+  getEmployeeDetailsById
 } = require("../controllers/Employee.controller");
 
 router.put("/confirmouttime/:attendenceId",confirmOutTime);
@@ -24,6 +25,7 @@ router.post("/login", loginEmployee);
 router.post("/loginwithfaceauth", loginEmployeeWithFaceAuthetication);
 router.get("/", auth, getEmployeeDetails);
 router.put("/updateprofile/:id", updateEmployeeProfile);
+router.get("/:id", getEmployeeDetailsById);
 router.delete("/:id", deleteEmployee);
 
 module.exports = router;
